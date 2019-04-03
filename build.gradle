@@ -1,0 +1,24 @@
+plugins {
+    id 'java'
+}
+
+group 'com.changxin'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.8
+
+repositories {
+    maven { url "http://118.118.117.105:8081/repository/maven-public/" }
+
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'com.alibaba', name: 'easyexcel', version: '1.1.2-beta4'
+
+    annotationProcessor 'org.projectlombok:lombok:1.18.2'
+    compile 'org.projectlombok:lombok:1.18.2'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.2'
+    testCompile 'org.projectlombok:lombok:1.18.2'
+
+}
