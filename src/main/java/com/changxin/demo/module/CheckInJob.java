@@ -1,5 +1,6 @@
 package com.changxin.demo.module;
 
+import com.alibaba.excel.metadata.Sheet;
 import com.changxin.demo.FPICheckInConsumer;
 import com.changxin.demo.CheckInInfo;
 import com.changxin.demo.ExcelInputStreamExtractor;
@@ -25,8 +26,8 @@ public class CheckInJob {
 
 
     public void start(String excelFromFPI, String excelFromDingDing) {
-        analysis(excelFromFPI);
-        analysis(excelFromDingDing);
+        analysis(excelFromFPI, new Sheet(1, 1));
+        analysis(excelFromDingDing, new Sheet(1, 3));
 
 
 
@@ -36,8 +37,8 @@ public class CheckInJob {
 
 
     //=========================================
-    private void analysis(String excelPath) {
-        ExcelInputStreamExtractor extractorForLocal = getExtractor(excelPath);
+    private void analysis(String excelPath, Sheet sheet) {
+        ExcelInputStreamExtractor extractorForLocal = getExtractor(excelPath, sheet);
 
         try {
             extractorForLocal.open();
@@ -56,14 +57,14 @@ public class CheckInJob {
         }
     }
 
-    private ExcelInputStreamExtractor getExtractor(String excelPath) {
+    private ExcelInputStreamExtractor getExtractor(String excelPath, Sheet sheet) {
         FileInputStream inputStream;
         ExcelInputStreamExtractor extractor = null;
         try {
             inputStream = new FileInputStream(excelPath);
             extractor = ExcelInputStreamExtractor.of(
                     inputStream,
-                    ExcelInputStreamMapper.newMapper()
+                    ExcelInputStreamMapper.newMapper(sheet)
             );
         } catch (FileNotFoundException e) {
             e.printStackTrace();
