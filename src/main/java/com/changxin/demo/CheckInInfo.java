@@ -6,7 +6,7 @@ import lombok.Getter;
 public class CheckInInfo {
     private String date;
 
-    //0:准时， 1：迟到，2 没来
+    //0:ontime， 1：late，2 absence
     private String arrive;
     private String depart;
 

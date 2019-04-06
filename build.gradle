@@ -8,7 +8,10 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
-    maven { url "http://118.118.117.105:8081/repository/maven-public/" }
+    //maven { url "http://118.118.117.105:8081/repository/maven-public/" }
+    maven {
+        url 'http://maven.aliyun.com/nexus/content/groups/public/'
+    }
 
     mavenCentral()
 }

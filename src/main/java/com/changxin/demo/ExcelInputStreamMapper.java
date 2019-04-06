@@ -29,8 +29,8 @@ public class ExcelInputStreamMapper<T> implements InputStreamMapper<T> {
 
 
     public static void main(String[] args) {
-        ExcelInputStreamMapper mapper = ExcelInputStreamMapper.newMapper(new Sheet(1, 1));
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("指纹机.xlsx");
+        ExcelInputStreamMapper mapper = ExcelInputStreamMapper.newMapper(new Sheet(1, 3));
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("钉钉签到报表.xls");
         Iterator it = mapper.apply(inputStream);
 
         int i = 0;
@@ -38,12 +38,12 @@ public class ExcelInputStreamMapper<T> implements InputStreamMapper<T> {
 
         while(it.hasNext() && i < 5) {
             List<String> ob = (List<String>)it.next();
-            //System.out.println(ob.get(3) + "==" + ob.get(5) + "==" + ob.get(9) + "==" + ob.get(10));
+            System.out.println(ob.get(0) + "==" + ob.get(5) + "==" + ob.get(6) + "==" + ob.get(10));
 
 
             i++;
-            System.out.println(ob.toString());
-            System.out.println("=====");
+//            System.out.println(ob.toString());
+//            System.out.println("=====");
         }
 
     }
