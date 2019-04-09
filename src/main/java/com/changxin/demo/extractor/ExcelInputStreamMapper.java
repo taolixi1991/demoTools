@@ -1,8 +1,11 @@
-package com.changxin.demo;
+package com.changxin.demo.extractor;
 
 import com.alibaba.excel.EasyExcelFactory;
 import com.alibaba.excel.metadata.Sheet;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.InputStream;
 
 import java.util.Iterator;
@@ -37,10 +40,8 @@ public class ExcelInputStreamMapper<T> implements InputStreamMapper<T> {
         //it.next();
 
         while(it.hasNext() && i < 5) {
-            List<String> ob = (List<String>)it.next();
+            List<Object> ob = (List<Object>)it.next();
             System.out.println(ob.get(0) + "==" + ob.get(5) + "==" + ob.get(6) + "==" + ob.get(10));
-
-
             i++;
 //            System.out.println(ob.toString());
 //            System.out.println("=====");

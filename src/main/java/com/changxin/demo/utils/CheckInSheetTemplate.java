@@ -5,25 +5,28 @@ import com.alibaba.excel.metadata.TableStyle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.apache.poi.ss.usermodel.IndexedColors.BRIGHT_GREEN;
 
 public class CheckInSheetTemplate {
 
-    public static Table buildCheckInSheetTemplate(int num) {
-        Table table = buildTable(num);
+    public static Table buildCheckInSheetTemplate() {
+        Table table = buildTable();
         return table;
     }
 
-    private static Table buildTable(int num) {
+    private static Table buildTable() {
         List<List<String>> headList = new ArrayList<>();
 
-        for(int i = 0 ; i < num; i++) {
-            String columnName = "Day " + i + "th";
-            List<String> tmp = Arrays.asList(columnName);
-            headList.add(tmp);
-        }
+        headList.add(Collections.singletonList("姓名"));
+        headList.add(Collections.singletonList("日期"));
+        headList.add(Collections.singletonList("上班"));
+        headList.add(Collections.singletonList("下班"));
+        headList.add(Collections.singletonList("图1"));
+        headList.add(Collections.singletonList("图2"));
+        headList.add(Collections.singletonList("图3"));
 
         Table table = new Table(1);
         table.setHead(headList);

@@ -1,12 +1,13 @@
 package com.changxin.demo.utils;
 
+import com.changxin.demo.common.CheckInStatus;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class TimeUtils {
+public class CheckInTimeUtils {
 
     private static Date LATE_CHECK_IN_TIME;
     private static Date EARLY_CHECK_OUT_TIME;
@@ -41,20 +42,20 @@ public class TimeUtils {
         }
         try {
             if(isForCheckIn) {
-                if(TimeUtils.isLate(time)) {
+                if(CheckInTimeUtils.isLate(time)) {
                     return String.valueOf(CheckInStatus.OVERDUE);
                 } else {
                     return String.valueOf(CheckInStatus.ONTIME);
                 }
             } else {
-                if(TimeUtils.isEarly(time)) {
+                if(CheckInTimeUtils.isEarly(time)) {
                     return String.valueOf(CheckInStatus.OVERDUE);
                 } else {
                     return String.valueOf(CheckInStatus.ONTIME);
                 }
             }
         } catch (ParseException e) {
-            //e.printStackTrace();
+            e.printStackTrace();
             return null;
         }
     }

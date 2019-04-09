@@ -1,4 +1,4 @@
-package com.changxin.demo;
+package com.changxin.demo.extractor;
 
 import java.io.IOException;
 import java.io.InputStream;
