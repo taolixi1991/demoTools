@@ -1,49 +1,53 @@
-package com.changxin.demo;
-
-import com.alibaba.excel.metadata.Sheet;
-import com.alibaba.excel.metadata.Table;
-import com.changxin.demo.loader.ExcelLoader;
-import com.changxin.demo.utils.CheckInSheetTemplate;
-import com.changxin.demo.common.Month;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-public class Ceshi {
-    public static void main(String[] args) {
-        Sheet sheet1 = new Sheet(1,1);
-        sheet1.setSheetName("表1");
-        sheet1.setAutoWidth(true);
-
-        Sheet sheet2 = new Sheet(2,1);
-        sheet2.setSheetName("表2");
-        sheet2.setAutoWidth(true);
-
-        List<List<Object>> object = new ArrayList<>();
-//        List<String> ob1 = Arrays.asList("a", "aa", "aaa", "aaaa");
-//        List<String> ob2 = Arrays.asList("b", "bb", "bbb", "bbbb");
-//        List<String> ob3 = Arrays.asList("c", "cc", "ccc", "cccc");
-//        object.add(ob1);
-//        object.add(ob2);
-//        object.add(ob3);
-
-        Table table = CheckInSheetTemplate.buildCheckInSheetTemplate();
-
-        List<Object> objectToLoad = new ArrayList<>();
-        objectToLoad.add("String");
-        objectToLoad.add(123);
-
-        object.add(objectToLoad);
-//        ExcelLoader excel = ExcelLoader.of(Arrays.asList(sheet1, sheet2), table);
-//        try {
-//            excel.open("C:\\Users\\Zacks\\Desktop\\CheckinInfo.xlsx");
-//            excel.load(object);
-//            excel.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-        System.out.println("======Finisheddddd=======");
-    }
-}
+//package com.changxin.demo;
+//
+//
+//import org.apache.poi.ss.usermodel.Hyperlink;
+//import org.apache.poi.ss.usermodel.Row;
+//import org.apache.poi.ss.usermodel.Sheet;
+//import org.apache.poi.ss.usermodel.Workbook;
+//
+//import java.io.File;
+//import java.io.IOException;
+//import java.io.InputStream;
+//
+//public class Ceshi {
+//
+//    public static void main(String[] args) throws IOException {
+//
+//        String filePath = "D:\\workspace\\tmpDemo\\src\\main\\resources\\钉钉签到报表.xls";
+//        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("钉钉签到报表.xls");
+//
+//        Workbook wb = ExcelHyperLinkUtils.getWorkbok(inputStream, new File(filePath));
+//        Sheet sheet = wb.getSheetAt(0);
+//
+//        Row row = sheet.getRow(5);
+//        Hyperlink link = row.getCell(15).getHyperlink();
+//        System.out.println(link.getAddress());
+//
+////        Iterator<Row> rows = sheet.rowIterator();
+////
+////        Row
+////        while(rows.hasNext()) {
+////            System.out.println("11111");
+////            for(int i = 0; i < 3; i++) {
+////                rows.next();
+////            }
+////            System.out.println("2222");
+////
+////            Row row = rows.next();
+////            System.out.println(row.toString());
+////
+////            Hyperlink link = row.getCell(14).getHyperlink();
+////
+////            System.out.println(link);
+////            System.out.println("3333");
+////
+////            System.out.println(link.getAddress());
+////        }
+//
+//
+//
+//
+//        System.out.println("======Finisheddddd=======");
+//    }
+//}

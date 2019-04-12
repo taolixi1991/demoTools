@@ -20,7 +20,6 @@ public class CheckInSheetTemplate {
     private static Table buildTable() {
         List<List<String>> headList = new ArrayList<>();
 
-        headList.add(Collections.singletonList("姓名"));
         headList.add(Collections.singletonList("日期"));
         headList.add(Collections.singletonList("上班"));
         headList.add(Collections.singletonList("下班"));

@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 @SuppressWarnings("unchecked")
 public class FPICheckInConsumer implements Consumer {
 
-    private static List<String> result = new ArrayList<>(7);
+    private static List<String> result = new ArrayList<>(4);
 
     @Override
     public void accept(Object o) {
@@ -22,9 +22,6 @@ public class FPICheckInConsumer implements Consumer {
         //判断值
         result.add(CheckInTimeUtils.getCheckInStatus(record.get(9), Boolean.TRUE));
         result.add(CheckInTimeUtils.getCheckInStatus(record.get(10), Boolean.FALSE));
-        for(int i = 0 ; i < 3; i++) {
-            result.add(null);
-        }
     }
 
     private List<String> result() {

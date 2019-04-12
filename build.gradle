@@ -19,6 +19,12 @@ repositories {
 dependencies {
     compile group: 'com.alibaba', name: 'easyexcel', version: '1.1.2-beta4'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+//    compile group: 'cn.afterturn', name: 'easypoi-base', version: '3.2.0'
+//    compile group: 'cn.afterturn', name: 'easypoi-annotation', version: '3.2.0'
+    compile group: 'org.apache.poi', name: 'poi', version: '4.1.0'
+
+
+
 
     annotationProcessor 'org.projectlombok:lombok:1.18.2'
     compile 'org.projectlombok:lombok:1.18.2'

@@ -4,28 +4,27 @@ import com.alibaba.excel.metadata.Sheet;
 import com.alibaba.excel.metadata.Table;
 import com.changxin.demo.consumer.DingDingCheckInConsumer;
 import com.changxin.demo.consumer.FPICheckInConsumer;
-import com.changxin.demo.extractor.CheckInInfo;
+import com.changxin.demo.common.CheckInInfo;
 import com.changxin.demo.extractor.ExcelInputStreamExtractor;
 import com.changxin.demo.extractor.ExcelInputStreamMapper;
 import com.changxin.demo.loader.ExcelLoader;
 import com.changxin.demo.utils.CheckInSheetTemplate;
+import com.changxin.demo.utils.CheckInTimeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.rmi.MarshalledObject;
+import java.text.ParseException;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.prefs.BackingStoreException;
 
 @SuppressWarnings("unchecked")
 public class CheckInJob {
 
-    private HashMap<String, List<List<Object>>> checkIns;
+    private HashMap<String, Map<String, CheckInInfo>> checkIns;
 
 
     public static CheckInJob newJob(String excelFromFPI, String excelFromDingDing) {
@@ -33,13 +32,15 @@ public class CheckInJob {
     }
 
 
-    private void start(String excelFromFPI, String excelFromDingDing) {
+    private void execute(String excelFromFPI, String excelFromDingDing) {
         analysis(excelFromFPI, new Sheet(1, 1), FPICheckInConsumer.class);
         analysis(excelFromDingDing, new Sheet(1, 3), DingDingCheckInConsumer.class);
-        System.out.println(checkIns.size());
+
+
     }
 
-    public void execute() {
+
+    public void generateResult() {
         Table table = CheckInSheetTemplate.buildCheckInSheetTemplate();
         List<Sheet> sheets = getSheetList();
 
@@ -51,7 +52,20 @@ public class CheckInJob {
                 loader = loader.of(sheet, table);
                 System.out.println("applied sheet and table");
 
-                loader.load(checkIns.get(sheet.getSheetName()));
+                Map<String, CheckInInfo> map = checkIns.get(sheet.getSheetName());
+                List<List<Object>> res = new ArrayList();
+                for(String key : map.keySet()) {
+                    res.add(map.get(key).toList());
+                }
+                res.sort((o1, o2) -> {
+                    try {
+                        return CheckInTimeUtils.compare((String)o1.get(0), (String)o2.get(0));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                });
+                loader.load(res);
             }
 
             loader.commit();
@@ -61,10 +75,6 @@ public class CheckInJob {
         }
         System.out.println("======Finisheddddd=======");
     }
-
-
-
-
 
     //=========================================
     public void analysis(String excelPath, Sheet sheet, Class consumerClass) {
@@ -82,16 +92,18 @@ public class CheckInJob {
                 extractor.next().ifPresent((Consumer)consumer);
                 Method method = consumerClass.getDeclaredMethod("result");
                 method.setAccessible(true);
-                List<Object> records = (List<Object>)method.invoke(consumer);
-                CheckInInfo info = new CheckInInfo((String)records.get(1), (String)records.get(2), (String)records.get(3),
-                        records.get(4), records.get(5), records.get(6));
-                System.out.println(info.toList());
+                List<String> records = (List<String>)method.invoke(consumer);
+                CheckInInfo info = new CheckInInfo(records.get(1), records.get(2), records.get(3));
 
                 if(!checkIns.containsKey(records.get(0))) {
-                    checkIns.put((String)records.get(0), new ArrayList<>());
+                    checkIns.put(records.get(0), new HashMap<>());
                 }
-                checkIns.get(records.get(0)).add(info.toList());
-//                checkIns.getOrDefault(records.get(0), new ArrayList<>()).add(info);
+                //
+                if(!checkIns.get(records.get(0)).containsKey(info.getDate())) {
+                    checkIns.get(records.get(0)).put(info.getDate(), info);
+                } else {
+                    update(records.get(0), info);
+                }
             }
             //======
             extractor.close();
@@ -117,6 +129,23 @@ public class CheckInJob {
         return extractor;
     }
 
+    private void update(String name, CheckInInfo info) {
+        CheckInInfo record = checkIns.get(name).get(info.getDate());
+
+        if(StringUtils.isNotBlank(info.getArrive()) && StringUtils.isBlank(record.getArrive())) {
+            record.setArrive(info.getArrive());
+        }
+
+        if(StringUtils.isNotBlank(info.getDepart()) && StringUtils.isBlank(record.getDepart())) {
+            record.setArrive(info.getDepart());
+        }
+        record.addHyperLink(info.getArrivePic());
+        record.addHyperLink(info.getDepartPic());
+
+        checkIns.get(name).put(info.getDate(), record);
+    }
+
+
     private List<Sheet> getSheetList() {
         List<Sheet> sheets = new ArrayList<>();
         int count = 1;
@@ -132,7 +161,7 @@ public class CheckInJob {
 
     public CheckInJob(String excelFromFPI, String excelFromDingDing) {
         checkIns = new HashMap<>();
-        start(excelFromFPI, excelFromDingDing);
+        execute(excelFromFPI, excelFromDingDing);
     }
 
     public static void main(String[] args) {
@@ -144,7 +173,7 @@ public class CheckInJob {
         CheckInJob job = CheckInJob.newJob(excel1, excel2);
         //job.analysis(excel2,  new Sheet(1, 3), DingDingCheckInConsumer.class);
 
-        job.execute();
+        job.generateResult();
         System.out.println();
     }
 }

@@ -13,6 +13,7 @@ public class CheckInTimeUtils {
     private static Date EARLY_CHECK_OUT_TIME;
     private static Date MID_OF_WORK_TIME;
     private static final SimpleDateFormat TIME_FORMAT = new SimpleDateFormat("HH:mm");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     static {
         try {
@@ -34,6 +35,10 @@ public class CheckInTimeUtils {
 
     public static boolean isEarly(String time) throws ParseException {
         return TIME_FORMAT.parse(time).before(EARLY_CHECK_OUT_TIME);
+    }
+
+    public static int compare(String date1, String date2) throws ParseException {
+        return DATE_FORMAT.parse(date1).compareTo(DATE_FORMAT.parse(date2));
     }
 
     public static String getCheckInStatus(String time, boolean isForCheckIn) {
