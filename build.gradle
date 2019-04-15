@@ -8,7 +8,7 @@ version '1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 repositories {
-    //maven { url "http://118.118.117.105:8081/repository/maven-public/" }
+    maven { url "http://118.118.117.105:8081/repository/maven-public/" }
     maven {
         url 'http://maven.aliyun.com/nexus/content/groups/public/'
     }
@@ -23,6 +23,7 @@ dependencies {
 //    compile group: 'cn.afterturn', name: 'easypoi-annotation', version: '3.2.0'
     compile group: 'org.apache.poi', name: 'poi', version: '4.1.0'
 
+    compile group: 'com.google.guava', name: 'guava', version: '18.0'
 
 
 

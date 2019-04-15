@@ -2,7 +2,6 @@ package com.changxin.demo.consumer;
 
 import com.changxin.demo.utils.CheckInTimeUtils;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

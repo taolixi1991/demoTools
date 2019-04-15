@@ -38,7 +38,7 @@ public class ExcelLoader {
         if(writer == null || sheet == null) {
             throw new RuntimeException("Unable to load");
         }
-        //ExcelWriter writer = EasyExcelFactory.getWriter(outputStream);
+        ExcelWriter writer = EasyExcelFactory.getWriter(outputStream);
         System.out.println(objectToLoad);
         writer.write1(objectToLoad, sheet, table);
     }

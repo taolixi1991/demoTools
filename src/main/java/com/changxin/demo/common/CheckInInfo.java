@@ -20,10 +20,12 @@ public class CheckInInfo {
     private Hyperlink departPic;
 
 
-    public CheckInInfo(String data, String arrive, String depart) {
+    public CheckInInfo(String data, String arrive, String depart, Hyperlink arrivePic, Hyperlink departPic) {
         this.date = data;
         this.arrive = arrive;
         this.depart = depart;
+        this.arrivePic = arrivePic;
+        this.departPic = departPic;
     }
 
     public List<Object> toList() {

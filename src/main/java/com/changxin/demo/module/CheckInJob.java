@@ -7,15 +7,16 @@ import com.changxin.demo.consumer.FPICheckInConsumer;
 import com.changxin.demo.common.CheckInInfo;
 import com.changxin.demo.extractor.ExcelInputStreamExtractor;
 import com.changxin.demo.extractor.ExcelInputStreamMapper;
+import com.changxin.demo.extractor.ExcelPOIInputStreamMapper;
 import com.changxin.demo.loader.ExcelLoader;
 import com.changxin.demo.utils.CheckInSheetTemplate;
 import com.changxin.demo.utils.CheckInTimeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Hyperlink;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.rmi.MarshalledObject;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
@@ -33,8 +34,8 @@ public class CheckInJob {
 
 
     private void execute(String excelFromFPI, String excelFromDingDing) {
-        analysis(excelFromFPI, new Sheet(1, 1), FPICheckInConsumer.class);
-        analysis(excelFromDingDing, new Sheet(1, 3), DingDingCheckInConsumer.class);
+        analysis(excelFromFPI, new Sheet(1, 1), false, FPICheckInConsumer.class);
+        analysis(excelFromDingDing, new Sheet(1, 3),false, DingDingCheckInConsumer.class);
 
 
     }
@@ -77,8 +78,8 @@ public class CheckInJob {
     }
 
     //=========================================
-    public void analysis(String excelPath, Sheet sheet, Class consumerClass) {
-        ExcelInputStreamExtractor extractor = getExtractor(excelPath, sheet);
+    public void analysis(String excelPath, Sheet sheet, boolean isPOIBased, Class consumerClass) {
+        ExcelInputStreamExtractor extractor = getExtractor(excelPath, sheet, isPOIBased);
 
         System.out.println("we got extractor" + extractor.toString());
 
@@ -92,17 +93,22 @@ public class CheckInJob {
                 extractor.next().ifPresent((Consumer)consumer);
                 Method method = consumerClass.getDeclaredMethod("result");
                 method.setAccessible(true);
-                List<String> records = (List<String>)method.invoke(consumer);
-                CheckInInfo info = new CheckInInfo(records.get(1), records.get(2), records.get(3));
+                List<Object> records = (List<Object>)method.invoke(consumer);
+                CheckInInfo info;
+                if("HyperLinkConsumer".equals(consumerClass.getName())) {
+                    info = new CheckInInfo((String)records.get(1),null, null, (Hyperlink)records.get(2), (Hyperlink)records.get(3));
+                } else {
+                    info = new CheckInInfo((String)records.get(1), (String)records.get(2), (String)records.get(3), null, null);
+                }
 
                 if(!checkIns.containsKey(records.get(0))) {
-                    checkIns.put(records.get(0), new HashMap<>());
+                    checkIns.put((String)records.get(0), new HashMap<>());
                 }
                 //
                 if(!checkIns.get(records.get(0)).containsKey(info.getDate())) {
                     checkIns.get(records.get(0)).put(info.getDate(), info);
                 } else {
-                    update(records.get(0), info);
+                    update((String)records.get(0), info);
                 }
             }
             //======
@@ -112,16 +118,23 @@ public class CheckInJob {
         }
     }
 
-    private ExcelInputStreamExtractor getExtractor(String excelPath, Sheet sheet) {
+    private ExcelInputStreamExtractor getExtractor(String excelPath, Sheet sheet, boolean isPOIBaesd) {
         BufferedInputStream inputStream;
         ExcelInputStreamExtractor extractor = null;
         try {
             inputStream = new BufferedInputStream(new FileInputStream(excelPath));
 
-            extractor = ExcelInputStreamExtractor.of(
-                    inputStream,
-                    ExcelInputStreamMapper.newMapper(sheet)
-            );
+            if(isPOIBaesd) {
+                extractor = ExcelInputStreamExtractor.of(
+                        inputStream,
+                        ExcelPOIInputStreamMapper.newMapper()
+                );
+            } else {
+                extractor = ExcelInputStreamExtractor.of(
+                        inputStream,
+                        ExcelInputStreamMapper.newMapper(sheet)
+                );
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
