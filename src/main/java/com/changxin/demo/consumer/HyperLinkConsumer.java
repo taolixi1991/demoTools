@@ -15,37 +15,44 @@ public class HyperLinkConsumer implements Consumer {
 
     @Override
     public void accept(Object o) {
-        result.clear();
-        //name date time
-        List<Cell> record = (List<Cell>)o;
-
-        String name = record.get(0).getStringCellValue();
-        String date = record.get(1).getStringCellValue();
-        String time = record.get(2).getStringCellValue();
-
-        if(StringUtils.isBlank(name) || StringUtils.isBlank(date) || StringUtils.isBlank(time)) {
-            return;
-        }
-        result.add(name);
-        result.add(date);
-
-        boolean isCheckIn = true;
         try {
-            isCheckIn = CheckInTimeUtils.isCheckIn(time);
-        } catch (ParseException e) {
-            e.printStackTrace();
+            result.clear();
+            //name date time
+            List<Cell> record = (List<Cell>)o;
+
+            String name = record.get(0).getStringCellValue();
+            String date = record.get(1).getStringCellValue();
+            String time = record.get(2).getStringCellValue();
+
+            if(StringUtils.isBlank(name) || StringUtils.isBlank(date) || StringUtils.isBlank(time)) {
+                return;
+            }
+            result.add(name);
+            result.add(date);
+
+            boolean isCheckIn = true;
+            try {
+                isCheckIn = CheckInTimeUtils.isCheckIn(time);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            Hyperlink link = record.get(3).getHyperlink();
+            if(link != null) {
+                link.setLabel(time);
+            }
+
+            if(isCheckIn) {
+                result.add(link);
+                result.add(null);
+            } else {
+                result.add(null);
+                result.add(link);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
-        Hyperlink link = record.get(3).getHyperlink();
-        link.setLabel(time);
-
-        if(isCheckIn) {
-            result.add(link);
-            result.add(null);
-        } else {
-            result.add(null);
-            result.add(link);
-        }
     }
     private List<Object> result() {
         return result;

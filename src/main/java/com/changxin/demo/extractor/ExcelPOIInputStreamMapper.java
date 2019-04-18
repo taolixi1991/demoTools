@@ -25,7 +25,7 @@ public class ExcelPOIInputStreamMapper<T> implements InputStreamMapper<T> {
 
     @Override
     public Iterator apply(InputStream inputStream) {
-        List<Cell> excel = new ArrayList<>();
+        List<List<Cell>> excel = new ArrayList<>();
         try {
             Workbook workbook = new HSSFWorkbook(inputStream);
             Sheet sheet = workbook.getSheetAt(0);
@@ -39,21 +39,24 @@ public class ExcelPOIInputStreamMapper<T> implements InputStreamMapper<T> {
         return excel.iterator();
     }
 
-    private List<Cell> readExcelSheet(Sheet sheet) {
-        List<Cell> data = new ArrayList<>();
+    private List<List<Cell>> readExcelSheet(Sheet sheet) {
+        List<List<Cell>> data = new ArrayList<>();
         int rowNums = sheet.getLastRowNum();
-        for(int i = 0; i < rowNums; i++) {
+        for(int i = DATA_START_NUM; i < rowNums; i++) {
+            List<Cell> cells = new ArrayList<>();
             Row row = sheet.getRow(i);
             if(row != null) {
                 //0 : name, 5: date, 6: time, 15-20 pic
-                data.add(row.getCell(0));
-                data.add(row.getCell(5));
-                data.add(row.getCell(6));
+                cells.add(row.getCell(0));
+                cells.add(row.getCell(5));
+                cells.add(row.getCell(6));
                 if(row.getCell(15) != null) {
-                    data.add(row.getCell(15));
+                    cells.add(row.getCell(15));
                 }
             }
+            data.add(cells);
         }
         return data;
     }
+
 }

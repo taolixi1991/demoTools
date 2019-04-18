@@ -5,39 +5,41 @@ import com.alibaba.excel.metadata.Table;
 import com.changxin.demo.consumer.DingDingCheckInConsumer;
 import com.changxin.demo.consumer.FPICheckInConsumer;
 import com.changxin.demo.common.CheckInInfo;
+import com.changxin.demo.consumer.HyperLinkConsumer;
 import com.changxin.demo.extractor.ExcelInputStreamExtractor;
 import com.changxin.demo.extractor.ExcelInputStreamMapper;
 import com.changxin.demo.extractor.ExcelPOIInputStreamMapper;
 import com.changxin.demo.loader.ExcelLoader;
+import com.changxin.demo.loader.ExcelPOILoader;
 import com.changxin.demo.utils.CheckInSheetTemplate;
 import com.changxin.demo.utils.CheckInTimeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Hyperlink;
 
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.prefs.BackingStoreException;
 
 @SuppressWarnings("unchecked")
 public class CheckInJob {
 
+    /**
+     * Map<name, Map<date, checkinInfo>>
+     */
     private HashMap<String, Map<String, CheckInInfo>> checkIns;
 
 
-    public static CheckInJob newJob(String excelFromFPI, String excelFromDingDing) {
+    public static CheckInJob newJob(String excelFromFPI, String excelFromDingDing) throws RuntimeException {
         return new CheckInJob(excelFromFPI, excelFromDingDing);
     }
 
 
-    private void execute(String excelFromFPI, String excelFromDingDing) {
+    private void execute(String excelFromFPI, String excelFromDingDing) throws RuntimeException {
         analysis(excelFromFPI, new Sheet(1, 1), false, FPICheckInConsumer.class);
         analysis(excelFromDingDing, new Sheet(1, 3),false, DingDingCheckInConsumer.class);
-
-
+        analysis(excelFromDingDing, null, true, HyperLinkConsumer.class);
     }
 
 
@@ -51,21 +53,7 @@ public class CheckInJob {
             System.out.println("load is prepared");
             for(Sheet sheet : sheets) {
                 loader = loader.of(sheet, table);
-                System.out.println("applied sheet and table");
-
-                Map<String, CheckInInfo> map = checkIns.get(sheet.getSheetName());
-                List<List<Object>> res = new ArrayList();
-                for(String key : map.keySet()) {
-                    res.add(map.get(key).toList());
-                }
-                res.sort((o1, o2) -> {
-                    try {
-                        return CheckInTimeUtils.compare((String)o1.get(0), (String)o2.get(0));
-                    } catch (ParseException e) {
-                        e.printStackTrace();
-                    }
-                    return 0;
-                });
+                List<List<Object>> res = sortRecord(sheet.getSheetName());
                 loader.load(res);
             }
 
@@ -77,8 +65,31 @@ public class CheckInJob {
         System.out.println("======Finisheddddd=======");
     }
 
+
+    public boolean generateResultWithHyperLink() {
+        try {
+            String outputFilePath = this.getClass().getClassLoader().getResource("").getPath() + "签到统计结果";
+            //System.out.println(outputFilePath);
+            ExcelPOILoader loader = ExcelPOILoader.newLoader(outputFilePath);
+            for(String key : checkIns.keySet()) {
+                loader.of(key);
+                List<List<Object>> res = sortRecord(key);
+                loader.load(res);
+            }
+            loader.commit();
+            System.out.println("======Finisheddddd=======");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+
+
+    }
+
     //=========================================
-    public void analysis(String excelPath, Sheet sheet, boolean isPOIBased, Class consumerClass) {
+    public void analysis(String excelPath, Sheet sheet, boolean isPOIBased, Class consumerClass) throws RuntimeException {
         ExcelInputStreamExtractor extractor = getExtractor(excelPath, sheet, isPOIBased);
 
         System.out.println("we got extractor" + extractor.toString());
@@ -95,14 +106,14 @@ public class CheckInJob {
                 method.setAccessible(true);
                 List<Object> records = (List<Object>)method.invoke(consumer);
                 CheckInInfo info;
-                if("HyperLinkConsumer".equals(consumerClass.getName())) {
+                if("HyperLinkConsumer".equals(consumerClass.getSimpleName())) {
                     info = new CheckInInfo((String)records.get(1),null, null, (Hyperlink)records.get(2), (Hyperlink)records.get(3));
                 } else {
                     info = new CheckInInfo((String)records.get(1), (String)records.get(2), (String)records.get(3), null, null);
                 }
 
                 if(!checkIns.containsKey(records.get(0))) {
-                    checkIns.put((String)records.get(0), new HashMap<>());
+                    checkIns.put((String)records.get(0), new HashMap());
                 }
                 //
                 if(!checkIns.get(records.get(0)).containsKey(info.getDate())) {
@@ -113,8 +124,8 @@ public class CheckInJob {
             }
             //======
             extractor.close();
-        } catch (BackingStoreException | IOException | IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            throw  new RuntimeException("执行错误" + e);
         }
     }
 
@@ -148,13 +159,13 @@ public class CheckInJob {
         if(StringUtils.isNotBlank(info.getArrive()) && StringUtils.isBlank(record.getArrive())) {
             record.setArrive(info.getArrive());
         }
-
         if(StringUtils.isNotBlank(info.getDepart()) && StringUtils.isBlank(record.getDepart())) {
-            record.setArrive(info.getDepart());
+            record.setDepart(info.getDepart());
         }
         record.addHyperLink(info.getArrivePic());
         record.addHyperLink(info.getDepartPic());
 
+        System.out.println(record.toList().toString());
         checkIns.get(name).put(info.getDate(), record);
     }
 
@@ -171,8 +182,26 @@ public class CheckInJob {
         return sheets;
     }
 
+    private List<List<Object>> sortRecord(String keyName) {
+        Map<String, CheckInInfo> map = checkIns.get(keyName);
+        List<List<Object>> res = new ArrayList<>();
+        for(String date : map.keySet()) {
+            res.add(map.get(date).toList());
+        }
+        res.sort((o1, o2) -> {
+            try {
+                return CheckInTimeUtils.compare((String)o1.get(0), (String)o2.get(0));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return 0;
+        });
 
-    public CheckInJob(String excelFromFPI, String excelFromDingDing) {
+        return res;
+    }
+
+
+    public CheckInJob(String excelFromFPI, String excelFromDingDing) throws RuntimeException {
         checkIns = new HashMap<>();
         execute(excelFromFPI, excelFromDingDing);
     }
@@ -186,7 +215,7 @@ public class CheckInJob {
         CheckInJob job = CheckInJob.newJob(excel1, excel2);
         //job.analysis(excel2,  new Sheet(1, 3), DingDingCheckInConsumer.class);
 
-        job.generateResult();
+        job.generateResultWithHyperLink();
         System.out.println();
     }
 }

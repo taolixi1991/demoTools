@@ -1,6 +1,7 @@
 .idea/
 */.settings/
 *.idea
+out
 .DS_Store
 **/.iml*
 *.iml
@@ -13,3 +14,7 @@ target/
 *.iws
 antx.properties
 output/
+classes/
+
+# Gradle files
+.gradle/

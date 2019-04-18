@@ -3,8 +3,14 @@ package com.changxin.demo.loader;
 import com.changxin.demo.utils.CheckInSheetTemplate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Hyperlink;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 
 import java.io.BufferedOutputStream;
 import java.io.FileOutputStream;
@@ -34,13 +40,26 @@ public class ExcelPOILoader {
         return new ExcelPOILoader();
     }
 
-    public void load(List<Object> objectToLoad) {
-        for(int i = 1; i <= objectToLoad.size(); i++) {
-            Row row = sheet.createRow(i);
-            for(int cellNum = 0; cellNum < objectToLoad.size(); cellNum++) {
+    /**
+     *
+     * @param objectToLoad List<CheckInInfo>
+     */
+    public void load(List<List<Object>> objectToLoad) {
+        writeHeader();
+        for(int i = 0; i < objectToLoad.size(); i++) {
+            //first row is header
+            Row row = sheet.createRow(i + 1);
+            List<Object> elements = objectToLoad.get(i);
+            for(int cellNum = 0; cellNum < elements.size(); cellNum++) {
                 Cell cell = row.createCell(cellNum);
                 cell.setCellStyle(styles.get("body"));
-                Object object = objectToLoad.get(cellNum);
+                Object object = elements.get(cellNum);
+                if(cellNum > 2) {
+                    if(object != null) {
+                        Hyperlink link = (Hyperlink)object;
+                        System.out.println(link.getLabel());
+                    }
+                }
                 cellHelper(object, cell);
             }
         }
@@ -58,11 +77,15 @@ public class ExcelPOILoader {
             if(workbook != null) {
                 workbook.close();
             }
+            System.out.println("resource closed");
+
         }
     }
 
     private void cellHelper(Object o, Cell cell) {
+
         if(o instanceof Hyperlink) {
+            cell.setCellValue(((Hyperlink) o).getLabel());
             cell.setHyperlink((Hyperlink) o);
         } else {
             if(o != null) {

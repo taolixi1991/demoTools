@@ -14,26 +14,31 @@ public class DingDingCheckInConsumer implements Consumer {
 
     @Override
     public void accept(Object o) {
-        result.clear();
-
-        List<String> record = (List<String>)o;
-        result.add(record.get(0));
-        result.add(record.get(5));
-
-        boolean res = false;
         try {
-            res = CheckInTimeUtils.isCheckIn(record.get(6));
-        } catch (ParseException e) {
-            e.printStackTrace();
+            result.clear();
+
+            List<String> record = (List<String>)o;
+            result.add(record.get(0));
+            result.add(record.get(5));
+
+            boolean res = false;
+            try {
+                res = CheckInTimeUtils.isCheckIn(record.get(6));
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            if(res) {
+                result.add(record.get(6) + " " + CheckInTimeUtils.getCheckInStatus(record.get(6), Boolean.TRUE));
+                result.add(null);
+            } else {
+                result.add(null);
+                result.add(record.get(6) + " " + CheckInTimeUtils.getCheckInStatus(record.get(6), Boolean.FALSE));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
-        if(res) {
-            result.add(CheckInTimeUtils.getCheckInStatus(record.get(6), Boolean.TRUE));
-            result.add(null);
-        } else {
-            result.add(null);
-            result.add(CheckInTimeUtils.getCheckInStatus(record.get(6), Boolean.FALSE));
-        }
     }
 
     private List<Object> result() {
