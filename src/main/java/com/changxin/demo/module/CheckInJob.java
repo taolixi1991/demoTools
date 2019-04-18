@@ -66,11 +66,11 @@ public class CheckInJob {
     }
 
 
-    public boolean generateResultWithHyperLink() {
+    public boolean generateResultWithHyperLink(String pathDir) {
         try {
-            String outputFilePath = this.getClass().getClassLoader().getResource("").getPath() + "签到统计结果";
+            //String outputFilePath = this.getClass().getClassLoader().getResource("").getPath() + "签到统计结果.xls";
             //System.out.println(outputFilePath);
-            ExcelPOILoader loader = ExcelPOILoader.newLoader(outputFilePath);
+            ExcelPOILoader loader = ExcelPOILoader.newLoader(pathDir +"\\签到统计结果.xls");
             for(String key : checkIns.keySet()) {
                 loader.of(key);
                 List<List<Object>> res = sortRecord(key);
@@ -215,7 +215,9 @@ public class CheckInJob {
         CheckInJob job = CheckInJob.newJob(excel1, excel2);
         //job.analysis(excel2,  new Sheet(1, 3), DingDingCheckInConsumer.class);
 
-        job.generateResultWithHyperLink();
+        String output = "C:\\Users\\Zacks\\Desktop\\CheckinInfo.xls";
+        String dir = "C:\\Users\\Zacks\\Desktop";
+        job.generateResultWithHyperLink(dir);
         System.out.println();
     }
 }
